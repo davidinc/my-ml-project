@@ -1,30 +1,39 @@
-# Modern Phishing Tooling & Defensive Architecture
+Run this in your my-ml-project terminal to create the README.md file directly:Bashcat << 'EOF' > README.md
+# End-to-End Machine Learning Pipeline & Local TensorFlow Serving
 
-A reference guide for senior engineers covering Adversary-in-the-Middle (AiTM) phishing frameworks, emerging identity attack vectors, and cryptographic defense-in-depth strategies.
+A local-first machine learning pipeline covering automated data preprocessing, deep learning model training (MNIST), containerized serving with **TensorFlow Serving (Docker)**, and REST API inference verification.
 
-> **Disclaimer:** Offensive tools listed in this repository are documented strictly for authorized red teaming, adversary simulation, and defensive engineering.
+## Project Structure
 
-## 1. Modern Phishing & AiTM Tooling
+```text
+my-ml-project/
+├── 1_preprocess_data.py      # Automated missing-value imputation, outlier removal, scaling & encoding
+├── train_mnist.py            # Trains and exports the MNIST SavedModel (mnist_saved_model/1)
+├── test_predict.py           # REST API client for live inference & output archiving
+├── mnist_saved_model/        # Exported TensorFlow SavedModel (ignored in Git)
+│   └── 1/
+├── .gitignore
+└── README.md
+PrerequisitesPython 3.9+Docker Desktop (or Colima) running locallyQuick Start1. Environment SetupBashpython -m venv ml_env
+source ml_env/bin/activate        # macOS/Linux
+# ml_env\Scripts\activate         # Windows
 
-| Tool / Framework | Primary Capability | Mechanism |
-| :--- | :--- | :--- |
-| **Evilginx3** | AiTM Reverse Proxy | Intercepts traffic between the victim and IdP (Entra ID, Okta) to capture live session cookies and bypass standard MFA. |
-| **Modlishka** | Reverse Proxy with Automated TLS | Dynamically rewrites target domain responses on the fly without static HTML templates. |
-| **GoPhish** | Phishing Simulation | Open-source framework for authorized internal testing and API-driven campaign tracking. |
-| **EvilnoVNC** | Browser-in-the-Browser (BitB) / VNC | Streams a containerized headless browser session to the victim to capture full browser state and tokens. |
+pip install --upgrade pip
+pip install pandas numpy scipy scikit-learn tensorflow requests
+2. Run Data PreprocessingBashpython 1_preprocess_data.py
+3. Train & Export the MNIST ModelBashpython train_mnist.py
+Exports the SavedModel artifacts (saved_model.pb and variables/) to mnist_saved_model/1/.4. Serve the Model Locally with DockerBashdocker pull --platform linux/amd64 tensorflow/serving
 
-## 2. Emerging Attack Vectors
+docker run -t --rm --platform linux/amd64 \
+  -p 8501:8501 \
+  -v "\$PWD/mnist_saved_model:/models/mnist" \
+  -e MODEL_NAME=mnist \
+  tensorflow/serving
+5. Run REST API Inference & Archive OutputIn a second terminal:Bash# Check model health
+curl http://localhost:8501/v1/models/mnist
 
-* **Device Code Phishing:** Abuses the OAuth 2.0 Device Authorization Grant flow (`microsoft.com/devicelogin`) to obtain valid refresh tokens without stealing passwords.
-* **Consent Phishing:** Tricks users into granting permissions (`Mail.Read`, `Files.Read.All`) to rogue third-party OAuth apps; access persists even after a password reset.
-* **Quishing (QR Code Phishing):** Embeds malicious URLs in QR codes inside emails/PDFs to evade Secure Email Gateways (SEGs) and move victims to unmanaged mobile devices.
-* **LLM-Driven Spear Phishing:** Automates OSINT scraping and generates polymorphic, hyper-contextualized lures.
-* **HTML Smuggling & SVG Payloads:** Assembles malware locally inside the victim's browser via JavaScript blobs to bypass perimeter inspection.
-
-## 3. Defensive Architecture
-
-* **Phishing-Resistant MFA (FIDO2 / WebAuthn):** Enforce passkeys or hardware keys to cryptographically bind authentication to the origin domain, breaking AiTM proxies.
-* **Token Protection:** Bind refresh tokens to the device's TPM via Conditional Access to neutralize stolen session cookies.
-* **OAuth App Governance:** Disable user consent for unverified third-party apps and enforce admin approval workflows.
-* **Email Authentication:** Deploy SPF, DKIM, and DMARC with `p=reject` and monitor aggregate reports.
-* **Block Device Code Flow:** Restrict OAuth Device Code authentication via Conditional Access unless explicitly required.
+# Run prediction client and verify accuracy
+python test_predict.py
+REST API ReferenceEndpointMethodPurpose/v1/models/mnistGETCheck loaded model versions and status/v1/models/mnist/metadataGETInspect input/output tensor signatures/v1/models/mnist:predictPOSTSubmit normalized 28x28 image arrays under "instances"Verified ResultsSample Prediction: Actual=7, Predicted=7 (99.67% confidence)Batch Accuracy: 100.00%
+EOF
+Verify it was created with `ls -la README.md`, then stage and commit it with `git add README.md && git commit -m "docs: add project README"`.
