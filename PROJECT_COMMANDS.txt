@@ -1,0 +1,369 @@
+MNIST MACHINE-LEARNING PROJECT — COMMANDS AND EXPLANATIONS
+==========================================================
+
+Run all commands from:
+/Users/dawitchernet/WorkSpace/Machine Learning/my-ml-project
+
+
+1. INSTALL TENSORFLOW
+---------------------
+./ml_env/bin/python -m pip install 'tensorflow==2.16.2'
+
+Explanation:
+Installs TensorFlow 2.16.2 into the project's ml_env virtual environment.
+
+
+2. CHECK INSTALLED MACHINE-LEARNING PACKAGES
+--------------------------------------------
+./ml_env/bin/python -m pip show tensorflow tensorflow-cpu keras numpy
+
+Explanation:
+Displays installed TensorFlow, Keras, NumPy, and TensorFlow CPU package details.
+
+
+3. CHECK PYTHON ENVIRONMENT
+---------------------------
+./ml_env/bin/python - <<'PY'
+import sys, platform
+print(sys.version)
+print(platform.machine())
+PY
+
+Explanation:
+Shows the virtual-environment Python version and Mac architecture.
+
+
+4. CHECK PIP
+------------
+./ml_env/bin/python -m pip --version
+
+Explanation:
+Shows which Python interpreter owns pip.
+
+
+5. VERIFY TENSORFLOW AND MNIST
+------------------------------
+./ml_env/bin/python - <<'PY'
+import tensorflow as tf
+print('TensorFlow:', tf.__version__)
+print('MNIST classes:', tf.keras.datasets.mnist.load_data()[0][1].min(), tf.keras.datasets.mnist.load_data()[0][1].max())
+PY
+
+Explanation:
+Downloads or loads MNIST and verifies TensorFlow and the digit labels 0 through 9.
+
+
+6. INSTALL PLOTTING, TESTING, AND IMAGE PACKAGES
+-------------------------------------------------
+./ml_env/bin/python -m pip install matplotlib pytest pillow
+
+Explanation:
+- matplotlib creates learning, prediction, and confusion-matrix graphs.
+- pytest runs automated tests.
+- pillow loads custom PNG or JPEG images.
+
+
+7. ACTIVATE THE PROJECT ENVIRONMENT
+-----------------------------------
+source ml_env/bin/activate
+
+Explanation:
+Activates ml_env so later python and pip commands use the project environment.
+
+After activation:
+python 2_train_mnist.py
+
+
+8. RUN THE ORIGINAL TRAINING SCRIPT
+-----------------------------------
+./ml_env/bin/python 2_train_mnist.py
+
+Explanation:
+Runs five epochs with the original script's defaults and exports the model to
+mnist_saved_model/1.
+
+
+9. RUN A TWO-EPOCH VERIFICATION TRAINING
+-----------------------------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 2
+
+Explanation:
+Runs a quick complete expanded workflow and creates files under mnist_outputs/.
+
+
+10. TRAIN FOR TEN EPOCHS
+-------------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 10
+
+Explanation:
+Performs ten complete passes through the training data.
+
+
+11. CHANGE BATCH SIZE
+---------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 3 --batch-size 256
+
+Explanation:
+Processes 256 images before each weight update.
+
+Larger batches are usually more memory-efficient.
+Smaller batches are noisier but may improve generalization.
+
+
+12. INCREASE HIDDEN-LAYER CAPACITY
+----------------------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 10 --dense-units 256
+
+Explanation:
+Uses 256 neurons in the hidden Dense layer instead of 128.
+This gives the model more capacity to learn patterns.
+
+
+13. INCREASE DROPOUT
+--------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 10 --dropout 0.5
+
+Explanation:
+Randomly disables 50 percent of hidden neurons during each training step.
+This helps prevent overfitting.
+
+
+14. CHANGE THE LEARNING RATE
+----------------------------
+./ml_env/bin/python 2_train_mnist.py --epochs 10 --learning-rate 0.0001
+
+Explanation:
+Uses a smaller Adam learning rate.
+A smaller rate changes weights cautiously and may require more epochs.
+
+
+15. RUN A COMPLETE CUSTOM EXPERIMENT
+------------------------------------
+./ml_env/bin/python 2_train_mnist.py \
+  --epochs 10 \
+  --batch-size 128 \
+  --dense-units 256 \
+  --dropout 0.3 \
+  --learning-rate 0.001 \
+  --seed 42
+
+Explanation:
+Runs an educational experiment with:
+- 10 complete epochs
+- 128 images per batch
+- 256 hidden neurons
+- 30 percent dropout
+- Adam learning rate 0.001
+- Seed 42 for reproducibility
+
+Change only one option at a time to understand its effect.
+
+
+16. DISPLAY EVERY TRAINING OPTION
+---------------------------------
+./ml_env/bin/python 2_train_mnist.py --help
+
+Explanation:
+Lists all supported command-line arguments and their meanings.
+
+
+17. LOAD A SAVED MODEL WITHOUT TRAINING
+---------------------------------------
+./ml_env/bin/python 2_train_mnist.py --skip-training
+
+Explanation:
+Loads mnist_outputs/mnist_final.keras, evaluates it, creates result plots,
+and does not perform another training run.
+
+
+18. RUN AUTOMATED TESTS
+-----------------------
+./ml_env/bin/python -m pytest -q test_mnist.py
+
+Explanation:
+Runs tests for:
+- Random seed setup
+- Pixel normalization
+- MNIST dataset shapes
+- Keras model input/output shapes
+- Valid probability distributions
+
+
+19. CHECK PYTHON SYNTAX
+-----------------------
+./ml_env/bin/python -m py_compile 2_train_mnist.py test_mnist.py
+
+Explanation:
+Checks whether both Python files contain valid syntax. This does not run the code.
+
+
+20. INSTALL DOCKER DESKTOP
+--------------------------
+brew install --cask docker
+
+Explanation:
+Installs Docker Desktop and the Docker command-line interface on macOS.
+
+
+21. START DOCKER DESKTOP
+------------------------
+open -a Docker
+
+Explanation:
+Starts Docker Desktop and its Linux container engine.
+
+
+22. VERIFY DOCKER
+-----------------
+docker --version
+docker info
+docker ps
+
+Explanation:
+- docker --version shows the Docker client and server versions.
+- docker info verifies that the Docker engine is running.
+- docker ps lists active containers.
+
+
+23. DOWNLOAD TENSORFLOW SERVING
+-------------------------------
+docker pull --platform linux/amd64 tensorflow/serving
+
+Explanation:
+Downloads the TensorFlow Serving Linux/AMD64 container image.
+The platform option provides compatibility with Apple Silicon Macs.
+
+
+24. START TENSORFLOW SERVING
+----------------------------
+docker run -d \
+  --rm \
+  --platform linux/amd64 \
+  -p 8501:8501 \
+  -v "$PWD/mnist_outputs/mnist_saved_model:/models/mnist" \
+  -e MODEL_NAME=mnist \
+  --name mnist-serving \
+  tensorflow/serving
+
+Explanation:
+- -d: Runs the container in detached/background mode.
+- --rm: Removes the container after it stops.
+- --platform linux/amd64: Runs the compatible Linux image.
+- -p 8501:8501: Connects host port 8501 to container port 8501.
+- -v: Mounts mnist_outputs/mnist_saved_model as /models/mnist in the container.
+- -e MODEL_NAME=mnist: Names the served model "mnist".
+- --name: Gives the container a convenient name.
+- tensorflow/serving: Uses the TensorFlow Serving image.
+
+Model endpoint:
+http://localhost:8501/v1/models/mnist
+
+Prediction endpoint:
+http://localhost:8501/v1/models/mnist:predict
+
+
+25. CHECK THE SERVED MODEL
+--------------------------
+curl http://localhost:8501/v1/models/mnist
+
+Explanation:
+Returns the model status. A successful result contains:
+
+{
+  "model_version_status": [
+    {
+      "version": "1",
+      "state": "AVAILABLE",
+      "status": {
+        "error_code": "OK",
+        "error_message": ""
+      }
+    }
+  ]
+}
+
+
+26. SEND A REAL MNIST IMAGE TO THE SERVER
+-----------------------------------------
+./ml_env/bin/python - <<'PY'
+import json
+import urllib.request
+import tensorflow as tf
+
+(_, _), (images, labels) = tf.keras.datasets.mnist.load_data()
+image = (images[0].astype('float32') / 255.0).tolist()
+
+body = json.dumps({'instances': [image]}).encode('utf-8')
+request = urllib.request.Request(
+    'http://localhost:8501/v1/models/mnist:predict',
+    data=body,
+    headers={'Content-Type': 'application/json'},
+)
+
+with urllib.request.urlopen(request, timeout=30) as response:
+    result = json.load(response)
+
+probabilities = result['predictions'][0]
+predicted_digit = max(range(10), key=lambda digit: probabilities[digit])
+
+print('Actual digit:', int(labels[0]))
+print('Predicted digit:', predicted_digit)
+print('Confidence:', f'{probabilities[predicted_digit]:.2%}')
+PY
+
+Explanation:
+1. Loads one test image from MNIST.
+2. Converts pixel values from 0-255 to 0.0-1.0.
+3. Sends the image as JSON to TensorFlow Serving.
+4. Receives ten probabilities.
+5. Selects the largest probability as the predicted digit.
+
+Observed result:
+Actual digit: 7
+Predicted digit: 7
+Confidence: 99.67%
+
+
+27. VIEW CONTAINER LOGS
+-----------------------
+docker logs mnist-serving
+
+Explanation:
+Displays TensorFlow Serving startup and prediction-request logs.
+
+
+28. STOP THE SERVER
+-------------------
+docker stop mnist-serving
+
+Explanation:
+Stops the TensorFlow Serving container.
+
+
+29. START THE EXISTING CONTAINER AGAIN
+--------------------------------------
+docker start mnist-serving
+
+Explanation:
+Starts the existing container. This does not work after it was removed by --rm.
+
+
+30. REMOVE THE CONTAINER
+------------------------
+docker rm -f mnist-serving
+
+Explanation:
+Forces removal of the serving container.
+
+
+31. RECREATE AND START THE SERVER
+---------------------------------
+docker run -d --rm --platform linux/amd64 \
+  -p 8501:8501 \
+  -v "$PWD/mnist_outputs/mnist_saved_model:/models/mnist" \
+  -e MODEL_NAME=mnist \
+  --name mnist-serving \
+  tensorflow/serving
+
+Explanation:
+Recreates the TensorFlow Serving container after it was stopped or removed.
